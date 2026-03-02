@@ -1,4 +1,4 @@
-# Project 1: Real-Time E-Commerce Order Analytics Pipeline
+# Project 1: Real-Time Electricity Order Analytics Pipeline
 
 ## Overview
 
