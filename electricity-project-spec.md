@@ -99,7 +99,7 @@ An e-commerce company wants to:
 **Goal:** Consume and persist the raw Kafka stream.
 
 - Write a PySpark Structured Streaming job (`stream_consumer.py`).
-- Read from the `ecommerce_orders` Kafka topic.
+- Read from the `electric_orders` Kafka topic.
 - Deserialize JSON messages into a Spark DataFrame.
 - Write the raw data to a **Parquet** sink partitioned by `date` (derived from `timestamp`).
 - Implement a 1-minute micro-batch trigger.
