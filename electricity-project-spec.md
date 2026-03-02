@@ -73,7 +73,7 @@ An e-commerce company wants to:
 
 **Goal:** Simulate a stream of order events.
 
-- Create a Kafka topic named `ecommerce_orders`.
+- Create a Kafka topic named `electric_orders`.
 - Write a Python Kafka producer (`producer.py`) that generates JSON order events:
   ```json
   {
@@ -114,7 +114,7 @@ An e-commerce company wants to:
 
 - Load the raw Parquet data as an RDD.
 - Use RDD transformations (`map`, `filter`, `reduceByKey`) to:
-  - Filter out `CANCELLED` orders.
+  - Filter out `INVALID` orders.
   - Compute total revenue per `product_id` using key-value pair RDDs.
 - Save the result as a text file.
 
