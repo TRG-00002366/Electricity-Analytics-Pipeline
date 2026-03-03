@@ -77,19 +77,25 @@ An e-commerce company wants to:
 - Write a Python Kafka producer (`producer.py`) that generates JSON order events:
   ```json
   {
-    "order_id": "ORD-10042",
-    "customer_id": "CUST-301",
-    "product_id": "PROD-88",
-    "product_name": "Wireless Mouse",
-    "category": "Electronics",
-    "quantity": 2,
-    "unit_price": 29.99,
-    "order_status": "NEW",
-    "region": "US-East",
-    "timestamp": "2026-02-19T10:32:00Z"
+	  "period" : "2026-03-02T07",
+	  "respondent" : "AVA",
+	  "respondent_name" : "Avista Corporation",
+	  "fueltype" : "WAT",
+	  "type-name" : "Hydro", 
+	  "value" : "729",
+	  "value-units" : "megawatthours"
   }
   ```
-- Use `order_status` values: `NEW`, `CANCELLED`, `RETURNED`.
+- Use `respondent` values: 'AEC', 'AECI', 'AVA', 'AVRN', 'AZPS', 'BANC', 'BPAT', 'CAL', 'CAR', 'CENT', 'CHPD', 'CISO', 'CPLE', 'CPLW', 'DEAA', 'DOPD', 'DUK', 'EEI', 'EPE', 'ERCO', 'FLA', 'FMPP', 'FPC', 'FPL', 'GCPD', 'GLHB', 'GRID', 'GRIF', 'GVL', 'GWA',' HGMA', 'HST', 'IID', 'IPCO', 'ISNE', 'JEA', 'LDWP', 'LGEE', 'MIDA', 'MIDW', 'MISO', 'NE', 'NEVP', 'NSB', 'NW', 'NWMT', 'NY', 'NYIS', 'PACE', 'PACW', 'PGE', 'PJM', 'PNM', 'PSCO', 'PSEI', 'SC', 'SCEG', 'SCL', 'SE', 'SEC', 'SEPA', 'SIKE', 'SOCO', 'SPA', 'SRP', 'SW', 'SWPP', 'TAL', 'TEC', 'TEN', 'TEPC', 'TEX', 'TIDC', 'TPWR', 'TVA', 'US48', 'WACM', 'WALC', 'WAUW', 'WWA'.
+
+- Use `respondent_name` values: 'PowerSouth Energy Cooperative', 'Associated Electric Cooperative, Inc.', 'Avista Corporation', 'Avangrid Renewables, LLC', 'Arizona Public Service Company', 'Balancing Authority of Northern California', 'Bonneville Power Administration', 'California', 'Carolinas', 'Central', 'Public Utility District No. 1 of Chelan County', 'California Independent System Operator', 'Duke Energy Progress East', 'Duke Energy Progress West', 'Arlington Valley, LLC', 'PUD No. 1 of Douglas County', 'Duke Energy Carolinas', 'Electric Energy, Inc.', 'El Paso Electric Company', 'Electric Reliability Council of Texas, Inc.', 'Florida', 'Florida Municipal Power Pool', 'Duke Energy Florida, Inc.', 'Florida Power & Light Co.', 'Public Utility District No. 2 of Grant County, Washington', 'GridLiance', 'Gridforce Energy Management, LLC', 'Griffith Energy, LLC', 'Gainesville Regional Utilities', 'NaturEner Power Watch, LLC', 'New Harquahala Generating Company, LLC', 'City of Homestead', 'Imperial Irrigation District', 'Idaho Power Company', 'ISO New England', 'JEA', 'Los Angeles Department of Water and Power', 'LG&E and KU Services Company as agent for Louisville Gas and Electric Company and Kentucky Utilities Company', 'Mid-Atlantic', 'Midwest', 'Midcontinent Independent System Operator, Inc.', 'New England', 'Nevada Power Company', 'Utilities Commission of New Smyrna Beach', 'Northwest', 'NorthWestern Corporation', 'New York', 'New York Independent System Operator', 'PacifiCorp East', 'PacifiCorp West', 'Portland General Electric Company', 'PJM Interconnection, LLC', 'Public Service Company of New Mexico', 'Public Service Company of Colorado', 'Puget Sound Energy, Inc.', 'South Carolina Public Service Authority', 'Dominion Energy South Carolina, Inc.', 'Seattle City Light', 'Southeast', 'Seminole Electric Cooperative', 'Southeastern Power Administration', 'Sikeston Board of Municipal Utilities', 'Southern Company Services, Inc. - Trans', 'Southwestern Power Administration', 'Salt River Project Agricultural Improvement and Power District', 'Southwest', 'Southwest Power Pool', 'City of Tallahassee', 'Tampa Electric Company', 'Tennessee', 'Tucson Electric Power', 'Texas', 'Turlock Irrigation District', 'City of Tacoma, Department of Public Utilities, Light Division' 'Tennessee Valley Authority', 'United States Lower 48', 'Western Area Power Administration - Rocky Mountain Region', 'Western Area Power Administration - Desert Southwest Region', 'Western Area Power Administration - Upper Great Plains West', 'NaturEner Wind Watch, LLC'.
+
+- Use `fueltype` values: 'BAT', 'BAT', 'COL', 'GEO', 'NG', 'NUC', 'OES', 'OIL', 'OTH', 'PS', 'SNB', 'SNB', 'SUN', 'UES', 'UES', 'UNK', 'WAT', 'WNB', 'WND'.
+
+- Use `type-name` values: 'Battery', 'Battery storage', 'Coal', 'Geothermal', 'Natural Gas', 'Nuclear', 'Other energy storage', 'Petroleum', 'Other',
+'Pumped storage', 'Solar with integrated battery storage', 'Solar Battery', 'Solar', 'Unknown energy storage', 'Unknown Energy',
+'Unknown', 'Hydro', 'Wind with integrated battery storage', 'Wind'.
+
 - Produce at least **500 events** with randomized data using the `Faker` library.
 
 ---
