@@ -20,6 +20,8 @@ def transform_data():
 
     electricity_df.select("*").show()
 
+    print(f"Number of records: {electricity_df.count()}")
+
 
     spark.stop()
 
