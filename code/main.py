@@ -14,7 +14,7 @@ def main():
     load_env()
     api_token = getenv("EIC_API_TOKEN")
 #   function below is used to create a temporary json file out of the api query
-    create_temp_file(api_token)
+    #create_temp_file(api_token)
     transform_data()
 
     pass
