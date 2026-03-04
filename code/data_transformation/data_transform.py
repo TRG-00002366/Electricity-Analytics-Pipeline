@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, explode
+from pyspark.sql.functions import col, sum as spark_sum
 import json
 
 
@@ -20,7 +20,16 @@ def transform_data():
 
     electricity_df.select("*").show()
 
+    sum_by_type = electricity_df.groupBy("type-name").agg(
+        spark_sum(col("value")).alias("total_megawatthours")
+    ).sort("total_megawatthours", ascending=False)
+    sum_by_type.show()
+
+
+
     print(f"Number of records: {electricity_df.count()}")
+
+
 
 
     spark.stop()
