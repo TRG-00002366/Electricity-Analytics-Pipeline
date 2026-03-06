@@ -2,6 +2,11 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, sum as spark_sum
 import json
 
+# Variable for correcting fuel type abbreviations
+corrected_abbreviations = ({"battery storage" : "bats",
+                            "solar battery" : "sb", 
+                            "unknown energy" : "ue"})
+
 def parse_json(line):
 
     data = json.loads(line)
@@ -17,15 +22,12 @@ def clean_text(record, lowercase_fields):
 
     return record
 
-def deduplicate_fueltype(record):
+def update_fueltype(record):
 
-    if "fueltype" in record and record["fueltype"] is not None:
-        if "type-name" == "battery storage":
-            record["fueltype"] = "BATS"
-        if "type-name" == "solar battery":
-            record["fueltype"] = "SB"
-        if "type-name" == "unknown energy'":
-            record["fueltype"] = "UE"
+    type_name = record.get("type_name")
+
+    if type_name in corrected_abbreviations:
+        record["fueltype"] = corrected_abbreviations.get(type_name)
 
     return record
 
@@ -45,10 +47,12 @@ def transform_data():
     sc = spark.sparkContext
     json_rdd = sc.textFile("./data/temp_api_data.json")
 
-    # Map each json element to a single line, text elements are lowercased, duplicate fuel types are addressed
+
+    # Map each json element to a single line, text elements are lowercased, fueltypes are corrected
     electricity_rdd = json_rdd.flatMap(parse_json)\
                 .map(lambda x : clean_text(x, ["respondent", "respondent-name", "fueltype", "type-name"]))\
-                .map(deduplicate_fueltype)
+                .map(update_fueltype)
+    
     # Display the first 5 rows of rdd
     print(electricity_rdd.take(5))
 
