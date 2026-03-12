@@ -36,20 +36,24 @@ def generate_records():
 
     return record
 
-def send_records(topic: str, count: int = 100):
+def send_records(topic: str = "electric_records", count: int = 100, run_length: int = 20):
 
     producer = create_producer()
-
+    start_time = time.perf_counter()
     try:
         count = 0
         start = time.time()
 
         while True:
 
+            if time.perf_counter() - start_time > run_length:
+                break
+
+
             #Function call generates record
             record = generate_records()
             producer.send(
-                topic="electric_records",
+                topic=topic,
                 key=record["respondent"],
                 value=record
             )
