@@ -59,8 +59,13 @@ CONSTANT_FUEL_TYPE_NAMES = ['Battery', 'Battery storage', 'Coal', 'Geothermal', 
                             'Solar with integrated battery storage', 'Solar Battery', 'Solar', 'Unknown energy storage', 'Unknown Energy', 'Unknown', 'Hydro', 
                             'Wind with integrated battery storage', 'Wind']
 
+
 def create_producer(bootstrap_servers: str = "localhost:9092"):
-    
+    '''
+        This function is used to generate the kafka producer, allowing use to add messages to a topic 
+    '''
+
+
     return KafkaProducer(
         bootstrap_servers=bootstrap_servers,
         compression_type="lz4",
@@ -70,6 +75,9 @@ def create_producer(bootstrap_servers: str = "localhost:9092"):
 
 
 def generate_records(curr_date: str):
+    '''
+        This file generates individual records, mocking how the records would come in from the EIA API
+    '''
     
     respondent_id = random.randint(0, len(CONSTANT_RESPONDENTS) - 1)
     fuel_id = random.randint(0, len(CONSTANT_FUEL_TYPES) -1)
@@ -87,7 +95,10 @@ def generate_records(curr_date: str):
     return record
 
 def send_records(curr_date: str, topic: str = "electric_records" ):
-
+    '''
+        This function makes calls to generate and send generated records to a kafka topic, 
+        and also changes the date that should be used next time this is ran
+    '''
     producer = create_producer()
     start_time = time.perf_counter()
     try:
@@ -109,7 +120,7 @@ def send_records(curr_date: str, topic: str = "electric_records" ):
             )
 
             count += 1
-
+        #Here we are ensuring we keep the time format the same between runs to prevent errors
         new_date = (datetime.strptime(curr_date, "%Y-%m-%dT%H") + timedelta(hours=1)).strftime("%Y-%m-%dT%H")
 
         with open("record-date.txt", "w") as file:
@@ -125,6 +136,7 @@ def send_records(curr_date: str, topic: str = "electric_records" ):
 
 def main():
     
+    #Below a file with a time is created if it doesn't exist, otherwise we retrieve the next date to be read from the file
     curr_date = None
     if not os.path.isfile("record-date.txt"):
         start_date = datetime(2026, 3, 2, 0).strftime("%Y-%m-%dT%H")
@@ -136,6 +148,8 @@ def main():
         with open("record-date.txt", "r") as file:
             curr_date = file.read()
 
+
+    #Makes sure a date is retieved, if so we start trying to make records
     if curr_date != None:
         send_records(curr_date)
 
