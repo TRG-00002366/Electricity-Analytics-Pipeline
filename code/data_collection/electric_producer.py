@@ -7,7 +7,7 @@ import json
 import time
 from datetime import datetime
 
-
+# NOTE: Once Airflow is operating we will need to add 
 
 
 def create_producer(bootstrap_servers: str = "localhost:9092"):
@@ -36,7 +36,7 @@ def generate_records():
 
     return record
 
-def send_records(topic: str = "electric_records", count: int = 100, run_length: int = 20):
+def send_records(topic: str = "electric_records", count: int = 100):
 
     producer = create_producer()
     start_time = time.perf_counter()
@@ -44,9 +44,9 @@ def send_records(topic: str = "electric_records", count: int = 100, run_length: 
         count = 0
         start = time.time()
 
-        while True:
-
-            if time.perf_counter() - start_time > run_length:
+        while count <= 500:
+            #If producer runs the max length allowed it will shut down
+            if time.perf_counter() - start_time > 10:
                 break
 
 
@@ -73,7 +73,7 @@ def send_records(topic: str = "electric_records", count: int = 100, run_length: 
 
 
 def main():
-    producer = create_producer()
+    send_records()
 
 
 
