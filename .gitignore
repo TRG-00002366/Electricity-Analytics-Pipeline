@@ -219,3 +219,7 @@ __marimo__/
 
 *.json
 eapipeline_env/
+
+# Airflow logs
+code/logs/
+logs/
