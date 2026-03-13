@@ -70,8 +70,13 @@ def transform_data():
     print(f"Number of records: {electricity_df.count()}")
 
 
-
-
     spark.stop()
 
     return None
+
+def main():
+
+    pass
+
+if __name__ == "__main__":
+    main()

@@ -66,3 +66,10 @@ def read_topic(run_length: int = 20):
         print(f"[ERROR] {e}")
 
 read_topic()
+
+def main():
+
+    pass
+
+if __name__ == "__main__":
+    main()
