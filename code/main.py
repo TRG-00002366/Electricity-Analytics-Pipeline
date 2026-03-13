@@ -21,7 +21,7 @@ def main():
     # create_temp_file(api_token)
     # transform_data()
     try:
-        run_length = int(input("How long do you want the program to run?"))
+        run_length = int(input("How long do you want the program to run? "))
 
 
         #Line below is called to start the consumer
@@ -33,7 +33,13 @@ def main():
         producer_thread.start()
 
         consumer_thread.join()
+      
+        
+        
         producer_thread.join()
+
+
+
         print("Both threads closed successfully")
 
 

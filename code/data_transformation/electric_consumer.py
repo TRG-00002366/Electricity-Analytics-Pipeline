@@ -5,6 +5,7 @@ This module will be used to read data from the kafka topic
 import json
 import time
 from kafka import KafkaConsumer
+import os
 
 def create_consumer(topic: str = "electric_records", bootstrap_servers: str = "localhost:9092", group_id="storage_group"):
     '''
@@ -39,14 +40,29 @@ def read_topic(run_length: int = 20):
                 for message in messages:
                     record = message.value
 
-                    with open("./data/generated_records.json", "a") as file:
-                        file.write(json.dumps(message))
-                    
+                    if not os.path.isfile("generated_records.json"):
+                        with open("generated_records.json", "w") as file:
+                            file_structure = {
+                                "electric_records": []
+                            }
+                            
+                            file.write(json.dumps(file_structure))
+
+                    with open("generated_records.json", "r+") as file:
+                        #Load json file as dict
+                        data = json.load(file)
+
+                        data["electric_records"].append(record)
+
+                        file.seek(0)
+
+                        file.write(json.dumps(data))
 
 
 
     except KeyboardInterrupt:
         pass
+    except Exception as e:
+        print(f"[ERROR] {e}")
 
-
-
+read_topic()
