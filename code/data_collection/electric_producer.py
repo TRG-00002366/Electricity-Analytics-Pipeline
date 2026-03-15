@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import os
 import random
 
+
 # NOTE: Once Airflow is operating we will need to change where current date is stored to make sense in the context of airflow
 
 CONSTANT_RESPONDENTS = ['AEC', 'AECI', 'AVA', 'AVRN', 'AZPS', 'BANC', 'BPAT', 'CAL', 
@@ -23,19 +24,12 @@ CONSTANT_RESPONDENTS = ['AEC', 'AECI', 'AVA', 'AVRN', 'AZPS', 'BANC', 'BPAT', 'C
 
 
 CONSTANT_RESPONDENTS_NAMES = [  'PowerSouth Energy Cooperative', 'Associated Electric Cooperative, Inc.', 'Avista Corporation',
-                              
                                 'Avangrid Renewables, LLC', 'Arizona Public Service Company', 'Balancing Authority of Northern California',
-
                                 'Bonneville Power Administration', 'California', 'Carolinas', 'Central', 'Public Utility District No. 1 of Chelan County',
-
                                 'California Independent System Operator', 'Duke Energy Progress East', 'Duke Energy Progress West', 'Arlington Valley, LLC',
-
                                 'PUD No. 1 of Douglas County', 'Duke Energy Carolinas', 'Electric Energy, Inc.', 'El Paso Electric Company',
-
                                 'Electric Reliability Council of Texas, Inc.', 'Florida', 'Florida Municipal Power Pool', 'Duke Energy Florida, Inc.', 
-
                                 'Florida Power & Light Co.', 'Public Utility District No. 2 of Grant County, Washington', 'GridLiance', 
-
                                 'Gridforce Energy Management, LLC', 'Griffith Energy, LLC', 'Gainesville Regional Utilities', 'NaturEner Power Watch, LLC', 
                                 'New Harquahala Generating Company, LLC', 'City of Homestead', 'Imperial Irrigation District', 'Idaho Power Company', 
                                 'ISO New England', 'JEA', 'Los Angeles Department of Water and Power', 
@@ -48,8 +42,6 @@ CONSTANT_RESPONDENTS_NAMES = [  'PowerSouth Energy Cooperative', 'Associated Ele
                                 'Southeastern Power Administration', 'Sikeston Board of Municipal Utilities', 'Southern Company Services, Inc. - Trans', 
                                 'Southwestern Power Administration', 'Salt River Project Agricultural Improvement and Power District', 'Southwest', 
                                 'Southwest Power Pool', 'City of Tallahassee', 'Tampa Electric Company', 'Tennessee', 'Tucson Electric Power', 'Texas', 
-                                
-                                
                                 'Turlock Irrigation District', 'City of Tacoma, Department of Public Utilities, Light Division', 'Tennessee Valley Authority', 
                                 'United States Lower 48', 'Western Area Power Administration - Rocky Mountain Region', 
                                 'Western Area Power Administration - Desert Southwest Region', 'Western Area Power Administration - Upper Great Plains West', 'NaturEner Wind Watch, LLC']
@@ -60,18 +52,22 @@ CONSTANT_FUEL_TYPE_NAMES = ['Battery', 'Battery storage', 'Coal', 'Geothermal', 
                             'Wind with integrated battery storage', 'Wind']
 
 
-def create_producer(bootstrap_servers: str = "localhost:9092"):
+def create_producer(bootstrap_servers: str = "kafka:9092"):
     '''
         This function is used to generate the kafka producer, allowing use to add messages to a topic 
     '''
+    producer=None
+    try:
+        producer = KafkaProducer(
+            bootstrap_servers=bootstrap_servers,
+            compression_type="lz4",
+            key_serializer=lambda k: k.encode('utf-8') if k else None,
+            value_serializer=lambda v: json.dumps(v).encode('utf-8')
+        )
+    except Exception as e:
+        print(f"    [ERROR] {e}")
 
-
-    return KafkaProducer(
-        bootstrap_servers=bootstrap_servers,
-        compression_type="lz4",
-        key_serializer=lambda k: k.encode('utf-8') if k else None,
-        value_serializer=lambda v: json.dumps(v).encode('utf-8')
-    )
+    return producer
 
 
 def generate_records(curr_date: str):
@@ -147,7 +143,8 @@ def main():
     else:
         with open("record-date.txt", "r") as file:
             curr_date = file.read()
-
+    
+    # conn = BaseHook.get_connection
 
     #Makes sure a date is retieved, if so we start trying to make records
     if curr_date != None:

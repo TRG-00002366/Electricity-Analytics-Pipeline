@@ -1,25 +1,141 @@
-version: '3.8'
+# Data Pipeline Stack - Docker Compose Setup
+# This configuration creates a complete local environment with Airflow, Kafka, and Spark
+# Aligned with StreamFlow Analytics Platform architecture
 
 services:
-  # ZooKeeper - Cluster coordinator
+  # =============================================================================
+  # ZOOKEEPER (Required for Kafka coordination)
+  # =============================================================================
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
-    hostname: zookeeper
-    container_name: electricity-pipeline-zookeeper
+    container_name: pipeline-zookeeper
     ports:
       - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
     healthcheck:
-      test: [ "CMD", "nc", "-z", "localhost", "2181" ]
+      test: [ "CMD-SHELL", "cub zk-ready localhost:2181 5" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - pipeline-network
+
+  # =============================================================================
+  # KAFKA (Message Broker)
+  # =============================================================================
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: pipeline-kafka
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,EXTERNAL://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list" ]
       interval: 10s
       timeout: 5s
       retries: 5
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    networks:
+      - pipeline-network
 
+  # =============================================================================
+  # KAFKA UI (Visual Monitoring)
+  # =============================================================================
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: pipeline-kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=pipeline
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - pipeline-network
+
+  # =============================================================================
+  # SPARK (Master + Worker) - Using official Apache Spark image
+  # =============================================================================
+  # Init container to set up volume permissions
+  spark-init:
+    image: busybox
+    container_name: pipeline-spark-init
+    command: [ "sh", "-c", "mkdir -p /opt/spark-data/landing /opt/spark-data/gold && chmod -R 777 /opt/spark-data" ]
+    volumes:
+      - ./spark_data:/opt/spark-data
+    networks:
+      - pipeline-network
+
+  spark-master:
+    image: apache/spark:3.5.0
+    container_name: pipeline-spark-master
+    user: root
+    ports:
+      - "7077:7077"
+      - "8081:8080"
+    environment:
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_NO_DAEMONIZE=true
+    command: [ "/opt/spark/sbin/start-master.sh" ]
+    volumes:
+      - ./jobs:/opt/spark-jobs
+      - ./spark_data:/opt/spark-data
+    depends_on:
+      spark-init:
+        condition: service_completed_successfully
+    networks:
+      - pipeline-network
+
+  spark-worker:
+    image: apache/spark:3.5.0
+    container_name: pipeline-spark-worker
+    user: root
+    depends_on:
+      spark-init:
+        condition: service_completed_successfully
+      spark-master:
+        condition: service_started
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_NO_DAEMONIZE=true
+    command: [ "/opt/spark/sbin/start-worker.sh", "spark://spark-master:7077" ]
+    volumes:
+      - ./jobs:/opt/spark-jobs
+      - ./spark_data:/opt/spark-data
+    networks:
+      - pipeline-network
+
+  # =============================================================================
+  # POSTGRESQL (Airflow Metadata Database)
+  # =============================================================================
   postgres:
     image: postgres:13
-    container_name: electricity-pipeline-postgres
+    container_name: pipeline-postgres
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
@@ -27,23 +143,28 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "airflow"]
+      test: [ "CMD", "pg_isready", "-U", "airflow" ]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - electricity-pipeline-network
+      - pipeline-network
 
+  # =============================================================================
+  # AIRFLOW (Webserver + Scheduler combined for simplicity)
+  # =============================================================================
   airflow-init:
     build:
       context: .
       dockerfile: Dockerfile.airflow
-    container_name: electricity-pipeline-airflow-init
+    container_name: pipeline-airflow-init
     entrypoint: /bin/bash
     command:
       - -c
       - |
+        echo "Initializing Airflow database..."
         airflow db init
+        echo "Creating admin user..."
         airflow users create \
           --username admin \
           --password admin \
@@ -51,29 +172,30 @@ services:
           --lastname User \
           --role Admin \
           --email admin@example.com || true
+        echo "Initialization complete!"
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
+      AIRFLOW__CORE__FERNET_KEY: 'zTvhZH8vXj5lZK8bT9nxC3wR2fHgJ6mN4pQ7sU0vY1c='
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - electricity-pipeline-network
+      - pipeline-network
 
   airflow-webserver:
     build:
       context: .
       dockerfile: Dockerfile.airflow
-    container_name: electricity-pipeline-airflow-webserver
+    container_name: pipeline-airflow-webserver
     command: webserver
     ports:
       - "8082:8080"
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
+      AIRFLOW__CORE__FERNET_KEY: 'zTvhZH8vXj5lZK8bT9nxC3wR2fHgJ6mN4pQ7sU0vY1c='
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
       AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
@@ -105,7 +227,7 @@ services:
       kafka:
         condition: service_healthy
     networks:
-      - electricity-pipeline-network
+      - pipeline-network
 
   airflow-scheduler:
     build:
@@ -118,7 +240,7 @@ services:
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
+      AIRFLOW__CORE__FERNET_KEY: 'zTvhZH8vXj5lZK8bT9nxC3wR2fHgJ6mN4pQ7sU0vY1c='
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 30
       AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 60
@@ -142,51 +264,18 @@ services:
       airflow-init:
         condition: service_completed_successfully
     networks:
-      - electricity-pipeline-network
+      - pipeline-network
 
-  # Kafka Broker
-  kafka:
-    image: confluentinc/cp-kafka:7.5.0
-    hostname: kafka
-    container_name: kafka-broker
-    depends_on:
-      zookeeper:
-        condition: service_healthy
-    ports:
-      - "9092:9092"
-      - "29092:29092"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
-    healthcheck:
-      test: [ "CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092" ]
-      interval: 10s
-      timeout: 10s
-      retries: 5
-
-  # Kafka UI - Web interface for monitoring
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
-    depends_on:
-      - kafka
-    ports:
-      - "8080:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
-      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
-
+# =============================================================================
+# NETWORKS & VOLUMES
+# =============================================================================
 networks:
-  electricity-pipeline-network:
+  pipeline-network:
     driver: bridge
 
 volumes:
+  zookeeper_data:
+  zookeeper_logs:
+  kafka_data:
   postgres_data:
+  spark_data:
