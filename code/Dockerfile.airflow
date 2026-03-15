@@ -38,4 +38,5 @@ RUN pip install --no-cache-dir \
     kafka-python \
     confluent-kafka \
     apache-airflow-providers-apache-kafka \
+    lz4 \
     --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.7.3/constraints-3.10.txt"
