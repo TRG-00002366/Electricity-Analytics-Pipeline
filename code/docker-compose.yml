@@ -176,7 +176,7 @@ services:
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__FERNET_KEY: 'zTvhZH8vXj5lZK8bT9nxC3wR2fHgJ6mN4pQ7sU0vY1c='
+      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     depends_on:
       postgres:
@@ -195,7 +195,7 @@ services:
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__FERNET_KEY: 'zTvhZH8vXj5lZK8bT9nxC3wR2fHgJ6mN4pQ7sU0vY1c='
+      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
       AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
@@ -211,6 +211,7 @@ services:
       - ./scripts:/opt/airflow/scripts
       - ./jobs:/opt/spark-jobs
       - ./spark_data:/opt/spark-data
+      - ./data:/opt/airflow/data
       - ./data_collection:/opt/airflow/data_collection
       - ./data_transformation:/opt/airflow/data_transformation
     healthcheck:
@@ -240,7 +241,7 @@ services:
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__FERNET_KEY: 'zTvhZH8vXj5lZK8bT9nxC3wR2fHgJ6mN4pQ7sU0vY1c='
+      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 30
       AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 60
@@ -254,6 +255,7 @@ services:
       - ./scripts:/opt/airflow/scripts
       - ./jobs:/opt/spark-jobs
       - ./spark_data:/opt/spark-data
+      - ./data:/opt/airflow/data
       # Docker socket for running docker exec commands (spark-submit)
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data_collection:/opt/airflow/data_collection

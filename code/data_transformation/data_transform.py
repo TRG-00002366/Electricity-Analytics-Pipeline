@@ -8,11 +8,7 @@ corrected_abbreviations = ({"battery storage" : "bats",
                             "unknown energy" : "ue"})
 
 def parse_json(line):
-
-    data = json.loads(line)
-
-    for record in data:
-        yield record
+    return json.loads(line)
 
 def clean_text(record, lowercase_fields):
 
@@ -24,7 +20,7 @@ def clean_text(record, lowercase_fields):
 
 def update_fueltype(record):
 
-    type_name = record.get("type_name")
+    type_name = record.get("type-name")
 
     if type_name in corrected_abbreviations:
         record["fueltype"] = corrected_abbreviations.get(type_name)
@@ -43,13 +39,16 @@ def transform_data():
 
     # print(json_data)
 
+    path = "/opt/airflow/data/raw/2026-03-17/records.json"
+
     # Create a spark context
     sc = spark.sparkContext
-    json_rdd = sc.textFile("./data/temp_api_data.json")
+    # json_rdd = sc.textFile("./data/temp_api_data.json")
+    json_rdd = sc.textFile(path)
 
 
     # Map each json element to a single line, text elements are lowercased, fueltypes are corrected
-    electricity_rdd = json_rdd.flatMap(parse_json)\
+    electricity_rdd = json_rdd.map(parse_json)\
                 .map(lambda x : clean_text(x, ["respondent", "respondent-name", "fueltype", "type-name"]))\
                 .map(update_fueltype)
     
@@ -76,7 +75,7 @@ def transform_data():
 
 def main():
 
-    pass
+    transform_data()
 
 if __name__ == "__main__":
     main()
