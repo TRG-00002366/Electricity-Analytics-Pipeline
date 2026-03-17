@@ -39,8 +39,7 @@ def transform_data():
 
     # print(json_data)
 
-    # path = "/opt/airflow/data/raw/*/*/*.json"
-    path = "/opt/airflow/data/raw/*/*.json"
+    path = "/opt/airflow/data/raw/*/*/*.json"
 
     # Create a spark context
     sc = spark.sparkContext
@@ -64,8 +63,6 @@ def transform_data():
         spark_sum(col("value")).alias("total_megawatthours")
     ).sort("total_megawatthours", ascending=False)
     sum_by_type.show()
-
-
 
     print(f"Number of records: {electricity_df.count()}")
 

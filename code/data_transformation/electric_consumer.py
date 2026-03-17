@@ -25,13 +25,13 @@ def create_consumer(topic: str = "electric_records", bootstrap_servers: str = "k
     )
 
 def get_output_path_name(period: str):
-    
-    path_name = BASE_PATH / f"raw/{period}/records.json"
+    yyyy_mm, hh = period.split("T")
+    path_name = BASE_PATH / f"raw/{yyyy_mm}/{hh}/records.json"
     path_name.parent.mkdir(parents=True, exist_ok=True)
     return path_name
 
 def save_records(records):
-    
+
     records_by_period = {}
 
     for record in records:
@@ -55,6 +55,7 @@ def read_topic(run_length: int = 20):
     consumer = create_consumer()
     start_time = time.perf_counter()
     records = []
+    count = 0
 
     try:
         while True:
@@ -67,15 +68,18 @@ def read_topic(run_length: int = 20):
                 time.sleep(5)
                 continue
 
-            #Retrieves the messages from the topic sand stores them in 
+            #Retrieves the messages from the topic and stores them
             for _, messages in msgs.items():
                 for message in messages:
                     records.append(message.value)
+                    count += 1
 
             if records:
                 save_records(records)
                 records = []
 
+        print(f"[INFO] Consumer consumed {count} records")
+    
     except KeyboardInterrupt:
         pass
 
