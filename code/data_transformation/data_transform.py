@@ -39,7 +39,8 @@ def transform_data():
 
     # print(json_data)
 
-    path = "/opt/airflow/data/raw/2026-03-17/records.json"
+    # path = "/opt/airflow/data/raw/*/*/*.json"
+    path = "/opt/airflow/data/raw/*/*.json"
 
     # Create a spark context
     sc = spark.sparkContext
@@ -55,7 +56,7 @@ def transform_data():
     # Display the first 5 rows of rdd
     print(electricity_rdd.take(5))
 
-    electricity_df = spark.read.json("./data/temp_api_data.json")
+    electricity_df = spark.read.json(path)
 
     electricity_df.select("*").show()
 
@@ -73,9 +74,31 @@ def transform_data():
 
     return None
 
+def transform_data_df():
+    spark = SparkSession.builder \
+    .appName("Electricity-Analytics-Pipeline") \
+    .master("local[*]") \
+    .getOrCreate()
+    json_data = None
+    # with open("./data/temp_api_data.json", 'r') as json_file:
+    #     json_data = json.load(json_file)
+
+    # print(json_data)s
+
+    # path = "/opt/airflow/data/raw/*/*/*.json"
+    print("df work")
+    path = "/opt/airflow/data/raw/*/*.json"
+
+    df1 = spark.read.json(path)
+
+    df1.show()
+
+
+
 def main():
 
     transform_data()
+    transform_data_df()
 
 if __name__ == "__main__":
     main()

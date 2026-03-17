@@ -129,6 +129,7 @@ def send_records(curr_date: str, topic: str = "electric_records" ):
     except KeyboardInterrupt:
         pass
     finally:
+        print(f"Producer produced {count} records")
         producer.flush()
         producer.close()
 
