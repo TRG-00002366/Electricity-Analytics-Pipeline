@@ -66,6 +66,10 @@ def transform_data():
 
     print(f"Number of records: {electricity_df.count()}")
 
+    total_by_respondent = electricity_df.groupBy("respondent_name").agg(
+        spark_sum(col("value")).alias("total_megawatthours")
+    ).sort("respondent_name")
+    total_by_respondent.show()
 
     spark.stop()
 

@@ -2,16 +2,16 @@
 
 ## Overview
 
-Build an end-to-end data engineering pipeline that ingests real-time e-commerce order events via Kafka, processes them with PySpark, and orchestrates the entire workflow using Apache Airflow. This project ties together all concepts from **Weeks 1–4** of the Data Engineering curriculum.
+Build an end-to-end data engineering pipeline that ingests real-time electricity production events via Kafka, processes them with PySpark, and orchestrates the entire workflow using Apache Airflow. This project ties together all concepts from **Weeks 1–4** of the Data Engineering curriculum.
 
 ---
 
 ## Business Scenario
 
-An e-commerce company wants to:
+The Environmental Protection Agency (EPA) wants to:
 
-1. **Stream** order events (new orders, cancellations, returns) in real time.
-2. **Process** the raw events to compute hourly sales aggregations, top-selling products, and regional revenue breakdowns.
+1. **Stream** electicity production (fuel type, production respondent, production amount) in real time.
+2. **Process** the raw events to compute hourly megawatt production, top-production respondents, and fuel-type breakdowns.
 3. **Persist** both raw and transformed data to storage (local filesystem or S3).
 4. **Orchestrate** the batch and streaming jobs on a daily schedule with retry and alerting.
 
@@ -62,7 +62,6 @@ An e-commerce company wants to:
 | PySpark (RDDs) | Low-level data processing & custom transforms| Week 1          |
 | PySpark (SQL)  | DataFrame operations, aggregations, joins    | Week 2          |
 | Apache Kafka   | Real-time event ingestion (producer/consumer)| Week 3          |
-| Spark Streaming| Consuming Kafka topics in near real-time     | Week 3          |
 | Apache Airflow | DAG-based job orchestration & scheduling     | Week 4          |
 
 ---
@@ -74,7 +73,7 @@ An e-commerce company wants to:
 **Goal:** Simulate a stream of order events.
 
 - Create a Kafka topic named `electric_orders`.
-- Write a Python Kafka producer (`producer.py`) that generates JSON order events:
+- Write a Python Kafka producer (`electric_producer.py`) that generates JSON order events:
   ```json
   {
 	  "period" : "2026-03-02T07",
@@ -100,11 +99,11 @@ An e-commerce company wants to:
 
 ---
 
-### Module 2 — Spark Streaming Consumer (Week 3)
+### Module 2 — Kafka Consumer (Week 3)
 
 **Goal:** Consume and persist the raw Kafka stream.
 
-- Write a PySpark Structured Streaming job (`stream_consumer.py`).
+- Write a Python Kafka consumer (`electric_consumer.py`).
 - Read from the `electric_orders` Kafka topic.
 - Deserialize JSON messages into a Spark DataFrame.
 - Write the raw data to a **Parquet** sink partitioned by `date` (derived from `timestamp`).
@@ -175,12 +174,12 @@ An e-commerce company wants to:
 
 | #  | Deliverable                        | Format              |
 |----|------------------------------------|----------------------|
-| 1  | `producer.py`                      | Python script        |
-| 2  | `stream_consumer.py`               | PySpark script       |
-| 3  | `batch_rdd_etl.py`                 | PySpark script       |
-| 4  | `batch_df_etl.py`                  | PySpark script       |
-| 5  | `ecommerce_dag.py`                 | Airflow DAG          |
-| 6  | `regions.csv`                      | Reference data       |
+| 1  | `electric_producer.py`             | Python script        |
+| 2  | `electric_consumer.py`             | Python script        |
+| 3  | `data_transform.py`                | PySpark script       |
+| 4  | `electric_producer_dag.py`         | AirFlow DAG          |
+| 5  | `electric_consumer_dag.py`         | Airflow DAG          |
+| 6  | `temp_api_data.json`               | Reference data       |
 | 7  | `README.md`                        | Setup & run guide    |
 | 8  | Sample output screenshots          | PNG / Markdown       |
 
