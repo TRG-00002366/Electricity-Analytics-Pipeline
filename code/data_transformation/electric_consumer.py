@@ -6,8 +6,12 @@ import json
 import time
 from kafka import KafkaConsumer
 import os
+from datetime import date
+from pathlib import Path
 
-def create_consumer(topic: str = "electric_records", bootstrap_servers: str = "localhost:9092", group_id="storage_group"):
+BASE_PATH = Path("/opt/airflow/data")
+
+def create_consumer(topic: str = "electric_records", bootstrap_servers: str = "kafka:9092", group_id="storage_group"):
     '''
     This function will be used to create and return a kafka concsumer
     '''
@@ -15,61 +19,75 @@ def create_consumer(topic: str = "electric_records", bootstrap_servers: str = "l
     return KafkaConsumer(
         topic,
         bootstrap_servers = bootstrap_servers,
+        group_id = group_id,
         value_deserializer = lambda v: json.loads(v.decode('utf-8')),
         key_deserializer = lambda k: k.decode("utf-8") if k else None        
     )
 
+def get_output_path_name(period: str):
+    
+    path_name = BASE_PATH / f"raw/{period}/records.json"
+    path_name.parent.mkdir(parents=True, exist_ok=True)
+    return path_name
 
+def save_records(records):
+    
+    records_by_period = {}
 
+    for record in records:
+        period = record.get("period")
+        if not period:
+            continue
+        if period not in records_by_period:
+            records_by_period[period] = []
+
+        records_by_period[period].append(record)
+
+    # Write grouped records
+    for period, period_records in records_by_period.items():
+        output_path = get_output_path_name(period)
+
+        with open(output_path, "a") as file:
+            for record in period_records:
+                file.write(json.dumps(record) + "\n")
 
 def read_topic(run_length: int = 20):
     consumer = create_consumer()
     start_time = time.perf_counter()
+    records = []
+
     try:
         while True:
             # Poll server for new messages
-            msgs = consumer.poll()
+            msgs = consumer.poll(timeout_ms=1000)
 
             if time.perf_counter() - start_time > run_length:
                 break
-            if msgs is None:
+            if not msgs:
                 time.sleep(5)
-            
+                continue
+
             #Retrieves the messages from the topic sand stores them in 
             for _, messages in msgs.items():
                 for message in messages:
-                    record = message.value
+                    records.append(message.value)
 
-                    if not os.path.isfile("generated_records.json"):
-                        with open("generated_records.json", "w") as file:
-                            file_structure = {
-                                "electric_records": []
-                            }
-                            
-                            file.write(json.dumps(file_structure))
-
-                    with open("generated_records.json", "r+") as file:
-                        #Load json file as dict
-                        data = json.load(file)
-
-                        data["electric_records"].append(record)
-
-                        file.seek(0)
-
-                        file.write(json.dumps(data))
-
-
+            if records:
+                save_records(records)
+                records = []
 
     except KeyboardInterrupt:
         pass
+
     except Exception as e:
         print(f"[ERROR] {e}")
 
-read_topic()
+    finally:
+        consumer.close()
 
 def main():
 
-    pass
+    read_topic()
 
 if __name__ == "__main__":
     main()

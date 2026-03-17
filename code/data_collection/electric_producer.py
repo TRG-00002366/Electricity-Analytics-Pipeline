@@ -61,6 +61,9 @@ def create_producer(bootstrap_servers: str = "kafka:9092"):
         producer = KafkaProducer(
             bootstrap_servers=bootstrap_servers,
             compression_type="lz4",
+            acks="all",
+            retries = 5,
+            linger_ms=20,
             key_serializer=lambda k: k.encode('utf-8') if k else None,
             value_serializer=lambda v: json.dumps(v).encode('utf-8')
         )
@@ -127,7 +130,7 @@ def send_records(curr_date: str, topic: str = "electric_records" ):
         pass
     finally:
         producer.flush()
-
+        producer.close()
 
 
 def main():
