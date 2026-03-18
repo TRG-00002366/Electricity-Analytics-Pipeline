@@ -43,7 +43,7 @@ def build_session(appName : str ="Electricity-Analytics-Pipeline"):
 def save_rdd(rdd):
 
     # Current time for directory naming convention
-    date = date.today().strftime("%Y-%m-%d")
+    date = datetime.today().strftime("%Y-%m-%d")
 
     # Output directory
     output_dir = f"data/transformed/rdd_total_megawatts_by_respondent_{date}"
@@ -59,7 +59,7 @@ def save_rdd(rdd):
 def main():
 
     # Location of consumed data
-    path = "/opt/airflow/data/raw/*/*/*.json"
+    path = "/opt/airflow/data/raw/*.json"
 
     # Create a spark session
     spark = build_session()
@@ -92,6 +92,8 @@ def main():
     
     save_rdd(pair_rdd)
 
+    # Cleanup
+    spark.stop()
 
 if __name__ == "__main__":
     main()

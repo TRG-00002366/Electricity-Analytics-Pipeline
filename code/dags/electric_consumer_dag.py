@@ -4,9 +4,8 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 
-
 from data_transformation.electric_consumer import main as run_consumer
-from data_transformation.data_transform import main as run_transformation
+from data_transformation.batch_df_etl import main as run_df_etl
 from data_transformation.batch_rdd_etl import main as run_rdd_etl
 
 with DAG(
@@ -24,12 +23,8 @@ with DAG(
     start = EmptyOperator(task_id = "start")
     end = EmptyOperator(task_id = "end")
 
-    # run_consumer_task = PythonOperator(
-    #     task_id = "run_consumer",
-    #     python_callable = run_consumer
-    # )
     run_consumer_task = BashOperator(
-        task_id = "run_comsumer",
+        task_id = "run_consumer",
         # bash_command='''echo "This is a test of the bash"'''
         bash_command='''spark-submit \
                 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 \
@@ -38,15 +33,14 @@ with DAG(
                 --duration 120'''
     )
 
-
-    run_transformation_task = PythonOperator(
-        task_id = "run_transformation",
-        python_callable = run_transformation
-    )
-
     run_rdd_etl_task = PythonOperator(
         task_id = "run_rdd_etl",
         python_callable = run_rdd_etl
     )
 
-    start >> run_consumer_task >> run_transformation_task >> run_rdd_etl_task >> end
+    run_df_etl_task = PythonOperator(
+        task_id = "run_df_etl",
+        python_callable = run_df_etl
+    )
+
+    start >> run_consumer_task >> run_rdd_etl_task >> run_df_etl_task >> end
