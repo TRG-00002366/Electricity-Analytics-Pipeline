@@ -39,7 +39,7 @@ def transform_data():
 
     # print(json_data)
 
-    path = "/opt/airflow/data/raw/*/*/*.json"
+    path = "/opt/airflow/data/raw/*.json"
 
     # Create a spark context
     sc = spark.sparkContext
@@ -86,7 +86,9 @@ def transform_data_df():
 
     # print(json_data)s
 
-    path = "/opt/airflow/data/raw/*/*/*.json"
+    #
+    # path = "/opt/airflow/data/raw/*/*/*.json"
+    path = "/opt/airflow/data/raw/*.json"
     print("df work")
     #path = "/opt/airflow/data/raw/*/*.json"
 

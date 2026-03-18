@@ -34,7 +34,7 @@ with DAG(
                 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 \
                 /opt/airflow/data_transformation/electric_consumer.py \
                 --bootstrap-servers kafka:9092 \
-                --duration 120'''
+                --duration 30'''
     )
 
     run_transformation_task = PythonOperator(

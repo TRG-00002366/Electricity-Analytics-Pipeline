@@ -8,8 +8,21 @@ from kafka import KafkaConsumer
 import os
 from datetime import date
 from pathlib import Path
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StringType, DoubleType, IntegerType
+from pyspark.sql.functions import col, from_json
 
 BASE_PATH = Path("/opt/airflow/data")
+
+
+json_schema = StructType() \
+    .add("period", StringType()) \
+    .add("respondent", StringType()) \
+    .add("respondent_name", StringType()) \
+    .add("fueltype", StringType()) \
+    .add("type-name", StringType()) \
+    .add("value", IntegerType()) \
+    .add("value-units", StringType())
 
 def create_consumer(topic: str = "electric_records", bootstrap_servers: str = "kafka:9092", group_id="storage_group"):
     '''
@@ -51,43 +64,74 @@ def save_records(records):
             for record in period_records:
                 file.write(json.dumps(record) + "\n")
 
+
 def read_topic(run_length: int = 20):
-    consumer = create_consumer()
-    start_time = time.perf_counter()
+
+
+    spark = SparkSession.builder.appName("Stream Consumer").getOrCreate()
+    #consumer = create_consumer()
+    # start_time = time.perf_counter()
     records = []
     count = 0
-
     try:
-        while True:
-            # Poll server for new messages
-            msgs = consumer.poll(timeout_ms=1000)
+        df = spark \
+            .readStream \
+            .format("kafka") \
+            .option("kafka.bootstrap.servers", "kafka:9092") \
+            .option("subscribe", "electric_records") \
+            .load()
+        
+        cleaned_df = df.select(from_json(col("value").cast("string"), json_schema).alias("data")).select("data.*")
+        
 
-            if time.perf_counter() - start_time > run_length:
-                break
-            if not msgs:
-                time.sleep(5)
-                continue
-
-            #Retrieves the messages from the topic and stores them
-            for _, messages in msgs.items():
-                for message in messages:
-                    records.append(message.value)
-                    count += 1
-
-            if records:
-                save_records(records)
-                records = []
-
-        print(f"[INFO] Consumer consumed {count} records")
-    
-    except KeyboardInterrupt:
-        pass
-
+        query = cleaned_df.writeStream \
+            .outputMode("append") \
+            .format("json") \
+            .option("path", f"/opt/airflow/data/raw/") \
+            .option("checkpointLocation", "/opt/airflow/data/checkpoints/electric_records") \
+            .start()
+                
+        query.awaitTermination(timeout=120)
+        query.stop()
     except Exception as e:
-        print(f"[ERROR] {e}")
+        print(f"[ERROR]     {e}")
+    
 
-    finally:
-        consumer.close()
+    spark.stop()
+
+        
+
+    # try:
+    #     while True:
+    #         # Poll server for new messages
+    #         msgs = consumer.poll(timeout_ms=1000)
+
+    #         # if time.perf_counter() - start_time > run_length:
+    #         #     break
+    #         if not msgs:
+    #             time.sleep(5)
+    #             continue
+
+    #         #Retrieves the messages from the topic and stores them
+    #         for _, messages in msgs.items():
+    #             for message in messages:
+    #                 records.append(message.value)
+    #                 count += 1
+
+    #         if records:
+    #             save_records(records)
+    #             records = []
+
+    #     print(f"[INFO] Consumer consumed {count} records")
+    
+    # except KeyboardInterrupt:
+    #     pass
+
+    # except Exception as e:
+    #     print(f"[ERROR] {e}")
+
+    # finally:
+    #     consumer.close()
 
 def main():
 
