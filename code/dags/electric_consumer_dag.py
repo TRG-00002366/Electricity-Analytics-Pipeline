@@ -28,7 +28,7 @@ with DAG(
     #     python_callable = run_consumer
     # )
     run_consumer_task = BashOperator(
-        task_id = "run_comsumer",
+        task_id = "run_consumer",
         # bash_command='''echo "This is a test of the bash"'''
         bash_command='''spark-submit \
                 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 \

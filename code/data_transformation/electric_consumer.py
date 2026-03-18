@@ -81,6 +81,7 @@ def read_topic(run_length: int = 20):
             .option("subscribe", "electric_records") \
             .load()
         
+        #This line is used to clean 
         cleaned_df = df.select(from_json(col("value").cast("string"), json_schema).alias("data")).select("data.*")
         
 
