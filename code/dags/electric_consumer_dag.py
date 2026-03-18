@@ -7,6 +7,7 @@ from airflow.operators.python import PythonOperator
 
 from data_transformation.electric_consumer import main as run_consumer
 from data_transformation.data_transform import main as run_transformation
+from data_transformation.batch_rdd_etl import main as run_rdd_etl
 
 with DAG(
     dag_id = "electricity_pipeline_consumer",
@@ -34,12 +35,18 @@ with DAG(
                 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 \
                 /opt/airflow/data_transformation/electric_consumer.py \
                 --bootstrap-servers kafka:9092 \
-                --duration 30'''
+                --duration 120'''
     )
+
 
     run_transformation_task = PythonOperator(
         task_id = "run_transformation",
         python_callable = run_transformation
     )
 
-    start >> run_consumer_task >> run_transformation_task >> end
+    run_rdd_etl_task = PythonOperator(
+        task_id = "run_rdd_etl",
+        python_callable = run_rdd_etl
+    )
+
+    start >> run_consumer_task >> run_transformation_task >> run_rdd_etl_task >> end

@@ -117,10 +117,11 @@ The Environmental Protection Agency (EPA) wants to:
 
 #### 3A — RDD-Based Processing (Week 1)
 
-- Load the raw Parquet data as an RDD.
+- Load the raw JSON data as an RDD.
 - Use RDD transformations (`map`, `filter`, `reduceByKey`) to:
-  - Filter out `INVALID` orders.
-  - Compute the total megawatthours per `region_id` and `fueltype` using key-value pair RDDs.
+  - Correct the `fuel-type` inconsistencies.
+  - Filter out `INVALID` values.
+  - Compute the total megawatthours per `respondent` using key-value pair RDDs.
 - Save the result as a text file.
 
 #### 3B — DataFrame / Spark SQL Processing (Week 2)
