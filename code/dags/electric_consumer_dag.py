@@ -22,9 +22,17 @@ with DAG(
     start = EmptyOperator(task_id = "start")
     end = EmptyOperator(task_id = "end")
 
-    run_consumer_task = PythonOperator(
-        task_id = "run_consumer",
-        python_callable = run_consumer
+    # run_consumer_task = PythonOperator(
+    #     task_id = "run_consumer",
+    #     python_callable = run_consumer
+    # )
+    run_consumer_task = BashOperator(
+        task_id = "run_comsumer",
+        bash_command='''docker compose exec airflow-scheduler spark-submit \
+                            --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 \
+                            /opt/airflow/data_transformation/electric_consumer.py \
+                            --bootstrap-servers kafka:9092 \
+                            --duration 120'''
     )
 
     run_transformation_task = PythonOperator(
