@@ -119,11 +119,7 @@ def send_records(curr_date: str, topic: str = "electric_records" ):
             )
 
             count += 1
-        #Here we are ensuring we keep the time format the same between runs to prevent errors
-        new_date = (datetime.strptime(curr_date, "%Y-%m-%dT%H") + timedelta(hours=1)).strftime("%Y-%m-%dT%H")
 
-        with open("record-date.txt", "w") as file:
-            file.write(str(new_date))
 
 
     except KeyboardInterrupt:
@@ -148,7 +144,11 @@ def main():
         with open("record-date.txt", "r") as file:
             curr_date = file.read()
     
-    # conn = BaseHook.get_connection
+    #Here we are ensuring we keep the time format the same between runs to prevent errors
+    new_date = (datetime.strptime(curr_date, "%Y-%m-%dT%H") + timedelta(hours=1)).strftime("%Y-%m-%dT%H")
+
+    with open("record-date.txt", "w") as file:
+        file.write(str(new_date))
 
     #Makes sure a date is retieved, if so we start trying to make records
     if curr_date != None:
