@@ -4,6 +4,7 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 
+
 from data_transformation.electric_consumer import main as run_consumer
 from data_transformation.data_transform import main as run_transformation
 
@@ -28,11 +29,12 @@ with DAG(
     # )
     run_consumer_task = BashOperator(
         task_id = "run_comsumer",
-        bash_command='''docker compose exec airflow-scheduler spark-submit \
-                            --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 \
-                            /opt/airflow/data_transformation/electric_consumer.py \
-                            --bootstrap-servers kafka:9092 \
-                            --duration 120'''
+        # bash_command='''echo "This is a test of the bash"'''
+        bash_command='''spark-submit \
+                --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 \
+                /opt/airflow/data_transformation/electric_consumer.py \
+                --bootstrap-servers kafka:9092 \
+                --duration 120'''
     )
 
     run_transformation_task = PythonOperator(
