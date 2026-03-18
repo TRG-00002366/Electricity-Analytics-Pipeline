@@ -82,11 +82,12 @@ def transform_data_df():
 
     # print(json_data)s
 
-    # path = "/opt/airflow/data/raw/*/*/*.json"
+    path = "/opt/airflow/data/raw/*/*/*.json"
     print("df work")
-    path = "/opt/airflow/data/raw/*/*.json"
+    #path = "/opt/airflow/data/raw/*/*.json"
 
     df1 = spark.read.json(path)
+    
 
     df1.show()
 
