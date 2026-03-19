@@ -4,10 +4,7 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 
-from data_transformation.electric_consumer import main as run_consumer
-from data_transformation.batch_df_etl import main as run_df_etl
-from data_transformation.batch_rdd_etl import main as run_rdd_etl
-
+# Default arguments for DAG setup
 default_args = {
         "owner" : "electricity_team",
         "start_date" : datetime(2026,3,12),
@@ -37,14 +34,20 @@ with DAG(
                 --duration 120'''
     )
 
-    run_rdd_etl_task = PythonOperator(
+    run_rdd_etl_task = BashOperator(
         task_id = "run_rdd_etl",
-        python_callable = run_rdd_etl
+        bash_command = """spark-submit \
+            --master spark://spark-master:7077 \
+            --deploy-mode client \
+            /opt/airflow/data_transformation/batch_rdd_etl.py"""
     )
-
-    run_df_etl_task = PythonOperator(
+ 
+    run_df_etl_task = BashOperator(
         task_id = "run_df_etl",
-        python_callable = run_df_etl
+        bash_command = """spark-submit \
+            --master spark://spark-master:7077 \
+            --deploy-mode client \
+            /opt/airflow/data_transformation/batch_df_etl.py"""
     )
 
-    start >> run_consumer_task >> run_rdd_etl_task >> run_df_etl_task >> end
+    start >> run_consumer_task >> [run_rdd_etl_task, run_df_etl_task] >> end
