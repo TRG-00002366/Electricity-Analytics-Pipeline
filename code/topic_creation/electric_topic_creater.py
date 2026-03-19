@@ -1,5 +1,6 @@
 '''
 This file is used to generate the kafka topics needed
+This file is being kept as an alternate way to create the topic, but it is not used in the project as we define our topic in kafka ui
 
 '''
 
