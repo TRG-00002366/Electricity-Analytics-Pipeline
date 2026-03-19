@@ -151,7 +151,7 @@ The Environmental Protection Agency (EPA) wants to:
   - Define the following tasks with proper dependencies:
 
   ```
-  start >> run_consumer_task >> run_batch_rdd_etl_task >> run_batch_df_etl_task >> end
+  start >> run_consumer_task >> [run_batch_rdd_etl_task, run_batch_df_etl_task] >> end
   ```
 
 - **Task details:**
@@ -174,8 +174,8 @@ electric_consumer_dag:
   |----------------------|---------------------|--------------------------------------------------|
   | `start`              | DummyOperator       | Pipeline entry point                             |
   | `run_consumer_task`  | BashOperator        | Start consuming messages                         |
-  | `run_rdd_etl_task`   | PythonOperator      | Begin the RDD batch job                          |
-  | `run_df_etl_task`    | PythonOperator      | Begin the Dataframe batch job                    |
+  | `run_rdd_etl_task`   | BashOperator        | Submit the RDD batch job                          |
+  | `run_df_etl_task`    | BashOperator        | Submit the Dataframe batch job                    |
   | `end`                | DummyOperator       | Pipeline exit point                              |
 
 - Configure:
