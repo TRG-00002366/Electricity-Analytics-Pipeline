@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
@@ -8,16 +8,20 @@ from data_transformation.electric_consumer import main as run_consumer
 from data_transformation.batch_df_etl import main as run_df_etl
 from data_transformation.batch_rdd_etl import main as run_rdd_etl
 
+default_args = {
+        "owner" : "electricity_team",
+        "start_date" : datetime(2026,3,12),
+        "retries" : 3,
+        "retry_delay": timedelta(minutes=5),
+    }
+
 with DAG(
     dag_id = "electricity_pipeline_consumer",
     description = "A pipeline for streaming electricity production events",
     start_date = datetime(2026,3,12),
     schedule="*/5 * * * *",
     catchup = False,
-    default_args = {
-        "owner" : "electricity_team",
-        "retries" : 3
-    }
+    default_args = default_args
 ) as dag:
     
     start = EmptyOperator(task_id = "start")

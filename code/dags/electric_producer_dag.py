@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
@@ -7,11 +7,14 @@ from airflow.hooks.base import BaseHook
 from kafka import KafkaProducer
 from data_collection.electric_producer import main as run_producer
 
+default_args = {
+        "owner" : "electricity_team",
+        "start_date" : datetime(2026,3,12),
+        "retries" : 3,
+        "retry_delay": timedelta(minutes=1),
+    }
+
 def connection_test():
-    #conn = BaseHook.get_connection("kafka_electric_records")
-
-    #bootstrap_servers = conn.extra_dejson.get("bootstrap.servers")
-
     try:
         run_producer()
     except Exception as e:
@@ -20,13 +23,9 @@ def connection_test():
 with DAG(
     dag_id = "electricity_pipeline_producer",
     description = "A pipeline for streaming electricity production events",
-    start_date = datetime(2026,3,12),
     schedule="* * * * *",
     catchup = False,
-    default_args = {
-        "owner" : "electricity_team",
-        "retries" : 3
-    }
+    default_args = default_args
 ) as dag:
     
     start = EmptyOperator(task_id = "start")

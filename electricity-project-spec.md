@@ -140,33 +140,47 @@ The Environmental Protection Agency (EPA) wants to:
 
 **Goal:** Schedule and manage the full pipeline.
 
-- Create an Airflow DAG named `ecommerce_pipeline` in a file called `ecommerce_dag.py`.
+- Create an Airflow DAG named `electric_producer_dag` in a file called `electric_producer_dag.py`.
 - Define the following tasks with proper dependencies:
 
   ```
-  start >> check_kafka_topic >> run_streaming_job >> wait_for_raw_data
-        >> run_rdd_etl >> run_df_etl >> validate_output >> end
+  start >> run_producer_task >> end
+  ```
+
+  - Create an Airflow DAG name `electric_consumer_dag` in a file called `electric_consumer_dag.py`.
+  - Define the following tasks with proper dependencies:
+
+  ```
+  start >> run_consumer_task >> run_batch_rdd_etl_task >> run_batch_df_etl_task >> end
   ```
 
 - **Task details:**
 
+electric_producer_dag:
+
+  | Task                 | Operator Type       | Description                                      |
+  |----------------------|---------------------|--------------------------------------------------|
+  | `start`              | DummyOperator       | Entry point                                      |
+  | `run_producer_task`  | PythonOperator      | Start the producer                               |
+  | `end`                | DummyOperator       | Exit point                                       |
+
+- Configure:
+  - `schedule_interval`: `* * * * *`
+  - `retries`: 3, `retry_delay`: 1 minute
+
+electric_consumer_dag:
+
   | Task                 | Operator Type       | Description                                      |
   |----------------------|---------------------|--------------------------------------------------|
   | `start`              | DummyOperator       | Pipeline entry point                             |
-  | `check_kafka_topic`  | PythonOperator      | Verify the Kafka topic exists and has messages   |
-  | `run_streaming_job`  | BashOperator        | Submit the Spark Streaming job via `spark-submit` |
-  | `wait_for_raw_data`  | FileSensor          | Wait until raw Parquet files appear              |
-  | `run_rdd_etl`        | BashOperator        | Submit the RDD batch job                         |
-  | `run_df_etl`         | BashOperator        | Submit the DataFrame batch job                   |
-  | `validate_output`    | PythonOperator      | Check row counts & schema of output files        |
+  | `run_consumer_task`  | BashOperator        | Start consuming messages                         |
+  | `run_rdd_etl_task`   | PythonOperator      | Begin the RDD batch job                          |
+  | `run_df_etl_task`    | PythonOperator      | Begin the Dataframe batch job                    |
   | `end`                | DummyOperator       | Pipeline exit point                              |
 
 - Configure:
-  - `schedule_interval`: `@daily`
-  - `retries`: 2, `retry_delay`: 5 minutes
-  - `email_on_failure`: `true`
-  - Use **Connections** for Kafka broker and Spark cluster settings.
-  - Create at least one **parameterized DAG** that accepts `execution_date` as a parameter.
+  - `schedule_interval`: `*/5 * * * *` Every 5 minutes
+  - `retries`: 3, `retry_delay`: 5 minutes
 
 ---
 
