@@ -47,6 +47,7 @@ CONSTANT_RESPONDENTS_NAMES = [  'PowerSouth Energy Cooperative', 'Associated Ele
                                 'Western Area Power Administration - Desert Southwest Region', 'Western Area Power Administration - Upper Great Plains West', 'NaturEner Wind Watch, LLC']
 
 CONSTANT_FUEL_TYPES = ['BAT', 'BAT', 'COL', 'GEO', 'NG', 'NUC', 'OES', 'OIL', 'OTH', 'PS', 'SNB', 'SNB', 'SUN', 'UES', 'UES', 'UNK', 'WAT', 'WNB', 'WND']
+CONSTANT_FUEL_MULTIPLIER = [0.1, 0.1, 0.7, 0.01, 0.9, 0.8, 0.01, 1.0, 0.01, 0.01, 0.2, 0.2, 0.6, 0.01, 0.01, 0.01, 0.1, 0.2, 0.2]
 CONSTANT_FUEL_TYPE_NAMES = ['Battery', 'Battery storage', 'Coal', 'Geothermal', 'Natural Gas', 'Nuclear', 'Other energy storage', 'Petroleum', 'Other', 'Pumped storage', 
                             'Solar with integrated battery storage', 'Solar Battery', 'Solar', 'Unknown energy storage', 'Unknown Energy', 'Unknown', 'Hydro', 
                             'Wind with integrated battery storage', 'Wind']
@@ -87,7 +88,7 @@ def generate_records(curr_date: str):
     "respondent_name" : CONSTANT_RESPONDENTS_NAMES[respondent_id],
     "fueltype" : CONSTANT_FUEL_TYPES[fuel_id],
     "type-name" : CONSTANT_FUEL_TYPE_NAMES[fuel_id], 
-    "value" : random.randint(1, 999),
+    "value" : int(random.randint(1, 999) * CONSTANT_FUEL_MULTIPLIER[fuel_id]),
     "value-units" : "megawatthours"
     }
 
