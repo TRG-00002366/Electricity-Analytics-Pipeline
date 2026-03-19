@@ -43,7 +43,7 @@ The Environmental Protection Agency (EPA) wants to:
                                                          ▼
                                               ┌─────────────────────┐
                                               │  Transformed Data   │
-                                              │  (Parquet / CSV)    │
+                                              │  (JSON   /   CSV)   │
                                               └──────────┬──────────┘
                                                          │
                                                          ▼
@@ -62,6 +62,7 @@ The Environmental Protection Agency (EPA) wants to:
 | PySpark (RDDs) | Low-level data processing & custom transforms| Week 1          |
 | PySpark (SQL)  | DataFrame operations, aggregations, joins    | Week 2          |
 | Apache Kafka   | Real-time event ingestion (producer/consumer)| Week 3          |
+| Spark Streaming| Consuming Kafka topics in near real-time	    | Week 3          |
 | Apache Airflow | DAG-based job orchestration & scheduling     | Week 4          |
 
 ---
