@@ -46,7 +46,7 @@ def save_rdd(rdd):
     date = datetime.today().strftime("%Y-%m-%d")
 
     # Output directory
-    output_dir = f"data/transformed/rdd_total_megawatts_by_respondent_{date}"
+    output_dir = f"data/transformed/rdd_total_megawatts_by_fueltype_{date}"
 
     # Check if directory exists
     if os.path.exists(output_dir):
@@ -81,8 +81,8 @@ def main():
 
     print(f"Number of elements in rdd: {electricity_rdd.count()}")
 
-    # Create pair RDD consisting of repondent abbrevtiation and total megawatt production
-    pair_rdd = electricity_rdd.map(lambda x: (x["respondent"], x["value"])) \
+    # Create pair RDD consisting of total megawatt production by fueltype
+    pair_rdd = electricity_rdd.map(lambda x: (x["fueltype"], x["value"])) \
         .reduceByKey(lambda x, y: x + y) \
         .coalesce(1)
     
