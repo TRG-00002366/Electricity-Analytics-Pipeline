@@ -176,35 +176,38 @@ The Environmental Protection Agency (EPA) wants to:
 |----|------------------------------------|----------------------|
 | 1  | `electric_producer.py`             | Python script        |
 | 2  | `electric_consumer.py`             | Python script        |
-| 3  | `data_transform.py`                | PySpark script       |
-| 4  | `electric_producer_dag.py`         | AirFlow DAG          |
-| 5  | `electric_consumer_dag.py`         | Airflow DAG          |
-| 6  | `temp_api_data.json`               | Reference data       |
-| 7  | `README.md`                        | Setup & run guide    |
-| 8  | Sample output screenshots          | PNG / Markdown       |
+| 3  | `batch_df_etl.py`                  | PySpark script       |
+| 4  | `batch_rdd_etl.py`                 | Setup & run guide    |
+| 5  | `electric_producer_dag.py`         | AirFlow DAG          |
+| 6  | `electric_consumer_dag.py`         | Airflow DAG          |
+| 7  | `temp_api_data.json`               | Reference data       |
+| 8  | `README.md`                        | Setup & run guide    |
+| 9  | Sample output screenshots          | PNG / Markdown       |
 
 ---
 
 ## Folder Structure
 
 ```
-project1/
-├── README.md
+README.md
+code/
 ├── data/
-│   ├── regions.csv
-│   ├── raw/                  # Raw Parquet output from streaming
+│   ├── checkpoints/		  # Folder used to store spark streaming data
+│   ├── raw/                  # Raw JSON output from streaming
 │   └── transformed/          # Aggregated Parquet output from batch ETL
+├── data_transformation/
+│   ├── batch_df_etl.py		  
+│   ├── batch_rdd_etl.py                  
+│   └── electric_consumer.py          
 ├── kafka/
 │   └── producer.py
-├── spark/
-│   ├── stream_consumer.py
-│   ├── batch_rdd_etl.py
-│   └── batch_df_etl.py
-├── airflow/
-│   └── dags/
-│       └── ecommerce_dag.py
-└── config/
-    └── spark-defaults.conf
+├── data_collection/
+│   ├── api_call.py
+│   └── electric_producer.py
+└── dags/
+    ├── electric_consumer_dag.py
+    └── electric_producer_dag.py
+
 ```
 
 ---
