@@ -95,7 +95,7 @@ The Environmental Protection Agency (EPA) wants to:
 'Pumped storage', 'Solar with integrated battery storage', 'Solar Battery', 'Solar', 'Unknown energy storage', 'Unknown Energy',
 'Unknown', 'Hydro', 'Wind with integrated battery storage', 'Wind'.
 
-- Produce at least **500 events** with randomized data using the `Faker` library.
+- Produce at least **500 events** with randomized data.
 
 ---
 
@@ -104,9 +104,9 @@ The Environmental Protection Agency (EPA) wants to:
 **Goal:** Consume and persist the raw Kafka stream.
 
 - Write a Python Kafka consumer (`electric_consumer.py`).
-- Read from the `electric_orders` Kafka topic.
+- Read from the `electric_records` Kafka topic.
 - Deserialize JSON messages into a Spark DataFrame.
-- Write the raw data to a **Parquet** sink partitioned by `date` (derived from `timestamp`).
+- Write the raw data to a **JSON**.
 - Implement a 1-minute micro-batch trigger.
 
 ---
