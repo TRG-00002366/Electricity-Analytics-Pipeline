@@ -194,7 +194,7 @@ code/
 ├── data/
 │   ├── checkpoints/		  # Folder used to store spark streaming data
 │   ├── raw/                  # Raw JSON output from streaming
-│   └── transformed/          # Aggregated Parquet output from batch ETL
+│   └── transformed/          # Aggregated CSV output from batch ETL
 ├── data_transformation/
 │   ├── batch_df_etl.py		  
 │   ├── batch_rdd_etl.py                  
