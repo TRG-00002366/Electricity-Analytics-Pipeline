@@ -37,7 +37,7 @@ def create_consumer(topic: str = "electric_records", bootstrap_servers: str = "k
         key_deserializer = lambda k: k.decode("utf-8") if k else None        
     )
 
-def read_topic(run_length: int = 20):
+def read_topic():
 
     spark = SparkSession.builder.appName("Stream Consumer").getOrCreate()
     #consumer = create_consumer()
