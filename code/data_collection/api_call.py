@@ -12,7 +12,6 @@ def create_temp_file(key):
     if response.status_code == 200:
         # Parse the JSON data into a Python dictionary
         data = response.json()
-        #print("Data received:", data)
         with open("./data/temp_api_data.json", 'w') as json_file:
             json.dump(data["response"]["data"], json_file)
 
